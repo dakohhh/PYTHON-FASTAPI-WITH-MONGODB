@@ -1,12 +1,13 @@
 from .database import db
 from models.model import TaskModel
 from bson import ObjectId
+from bson.errors import InvalidId
 
 
 
 
 
-async def fetch_task(id):
+async def fetch_task(id:str):
     task = await db.find_one({"_id": ObjectId(id)})
 
     task["_id"] = str(task["_id"])
@@ -18,9 +19,10 @@ async def fetch_all_task():
     query = db.find({})
     
     async for task in query:
- 
+        
         task['_id'] = str(task['_id'])
-        tasks.append(TaskModel(**task).dict())
+    
+        tasks.append(task)
 
     return tasks
 
@@ -55,7 +57,16 @@ async def remove_task(id:str):
     await db.delete_one({"_id":id})
 
 
-async def does_id_exist(id:str):
-    task = await db.find_one({"_id": ObjectId(id)}, {"_id": 1})
 
-    return True if task else False
+
+async def does_id_exist(id:str):
+    try:
+        object_id = ObjectId(id)
+    except InvalidId:
+        return False
+    
+
+    result = await db.find_one({"_id": ObjectId(id)})
+
+
+    return False if result is None else True
