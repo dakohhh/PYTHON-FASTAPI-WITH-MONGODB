@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request, status
-from database.crud import does_id_exist, fetch_task, fetch_all_task, _create_task
+from database.crud import does_id_exist, fetch_task, fetch_all_task, _create_task, _update_task, remove_task
 from response.response import customResponse
 from models.model import TaskForm
 from exceptions.custom_execption import NotFoundError
@@ -38,21 +38,34 @@ async def create_task(request:Request, task:TaskForm=Depends()):
     
     result = await _create_task(task.title, task.description)
 
-    return customResponse(status.HTTP_200_OK, "Created Task", data=result)
+    return customResponse(status.HTTP_201_CREATED, "Created Task", data=result)
 
 
 
 
+@router.put("/api/task/{task_id}")
+async def update_task(request:Request, task_id:str, task:TaskForm=Depends()):
+
+    if not await does_id_exist(task_id):
+        raise NotFoundError("ID not Found")
+    
+    await _update_task(task_id, task.title, task.description)
+
+    return customResponse(status.HTTP_200_OK, "Updated Successfully")
 
 
 
-@router.put("/api/task/{id}")
-async def update_task(request:Request):
-    pass
 
-@router.delete("/api/task/{id}")
-async def delete_task(request:Request):
-    pass
+@router.delete("/api/task/{task_id}")
+async def delete_task(request:Request, task_id:str):
+
+    if not await does_id_exist(task_id):
+        raise NotFoundError("ID not Found")
+
+
+    await remove_task(task_id)
+
+    return customResponse(status.HTTP_200_OK, "Deleted Successfully")
 
 
 

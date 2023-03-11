@@ -11,11 +11,13 @@ async def fetch_task(id:str):
     task = await db.find_one({"_id": ObjectId(id)})
 
     task["_id"] = str(task["_id"])
+
     return task 
 
 
 async def fetch_all_task():
     tasks = []
+
     query = db.find({})
     
     async for task in query:
@@ -45,24 +47,24 @@ async def _create_task(title:str, desc:str):
 
 
 
-async def _update_task(id:str, title:str, desc:str):
-    await db.update_one({"_id":id}, {"$set": {"title":title, "description":desc}})
-
-    task = await db.find_one({"_id":id})
-
-    return task
+async def _update_task(task_id:str, title:str, desc:str):
+    await db.update_one({"_id":ObjectId(task_id)}, {"$set": {"title":title, "description":desc}})
 
 
-async def remove_task(id:str):
-    await db.delete_one({"_id":id})
+
+
+async def remove_task(task_id:str):
+    await db.delete_one({"_id":ObjectId(task_id)})
 
 
 
 
 async def does_id_exist(id:str):
-    try:
+    try: 
         object_id = ObjectId(id)
-    except InvalidId:
+
+    except InvalidId: 
+        
         return False
     
 
